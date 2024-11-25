@@ -10,6 +10,12 @@ class FeudalCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def cog_check(self, ctx):
+        if ctx.author.guild_permissions.administrator:
+            return True
+        else:
+            await ctx.respond("You need administrator permissions to use commands in this cog.")
+
     async def create_roles(self, guild: discord.Guild, role_list: list[str]) -> None:
         if not role_list:
             raise Exception("Please provide a comma-separated list of role names.")
