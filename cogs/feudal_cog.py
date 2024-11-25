@@ -5,7 +5,7 @@ import random
 
 ALL_PERMISSIONS = discord.PermissionOverwrite.from_pair(discord.Permissions.all(), discord.Permissions.none())
 
-class Greetings(commands.Cog):
+class FeudalCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -66,4 +66,4 @@ class Greetings(commands.Cog):
         await ctx.respond('Feudalized!')
 
 def setup(bot):
-    bot.add_cog(Greetings(bot))
+    bot.add_cog(FeudalCog(bot))

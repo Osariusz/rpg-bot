@@ -20,7 +20,7 @@ async def on_ready() -> None:
 # Run the bot
 if __name__ == "__main__":
     # Load token from the environment
-    bot.load_extension('cogs.greetings')
+    bot.load_extension('cogs.feudal_cog')
     TOKEN: str = os.getenv("DISCORD_TOKEN", "")
     if not TOKEN:
         raise ValueError("DISCORD_TOKEN not found in the .env file.")
