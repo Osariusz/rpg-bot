@@ -41,14 +41,14 @@ class FeudalCog(commands.Cog):
                 raise ValueError(f"Role with name '{role_name}' not found.")
 
             category_overwrites = {
-                guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                guild.default_role: discord.PermissionOverwrite(),
                 role: ALL_PERMISSIONS,
             }
             category = await guild.create_category(name=f"{role_name} Zone", overwrites=category_overwrites)
 
             public_channel_overwrites = {
                 guild.default_role: discord.PermissionOverwrite(
-                    read_messages=True, send_messages=False
+                    send_messages=False
                 ),
                 role: ALL_PERMISSIONS
             }
