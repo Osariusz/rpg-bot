@@ -2,8 +2,6 @@ from typing import Any
 from discord.ext import commands
 import discord
 from GlobeMessage import GlobeMessage, save_message_to_db, get_all_globe_messages, GlobeMessageORM
-from GlobeView import GlobeView
-from InteractionHandler import MessageHandler
 
 class Bot(commands.Bot):
 
@@ -11,7 +9,6 @@ class Bot(commands.Bot):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.interaction_handler = MessageHandler()
 
     async def on_ready(self) -> None:
         print(f"Bot is online! Logged in as {self.user}")
