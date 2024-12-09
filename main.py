@@ -12,11 +12,6 @@ load_dotenv()
 intents = discord.Intents.all()  # Modify intents if needed
 bot = Bot(intents=intents)
 
-# Event triggered when the bot is ready
-@bot.event
-async def on_ready() -> None:
-    print(f"Bot is online! Logged in as {bot.user}")
-
 # Run the bot
 if __name__ == "__main__":
     # Load token from the environment

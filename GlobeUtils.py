@@ -1,4 +1,4 @@
-def normalize_input(coords: list[float]):
+def normalize_input(coords: list[float]) -> list[float]:
     latitude: float = coords[0]
     longitude: float = coords[1]
     
@@ -23,3 +23,6 @@ def normalize_input(coords: list[float]):
         else:
             longitude = longitude - 180
     return [latitude, longitude]
+
+def coordinates_text(coords: list[float]) -> str:
+    return f"{coords[0]}° {coords[1]}°"
