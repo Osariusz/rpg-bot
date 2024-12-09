@@ -55,17 +55,18 @@ class GlobeMessage():
             session.query(GlobeMessageORM).filter(GlobeMessageORM.message_id == self.message.id).update({'longitude': self.coords[1]})
             session.commit()
 
+        DEFAULT_HOP: int = 30
         async def left(interaction : discord.Interaction):
-            change_longitude(-25)
+            change_longitude(-DEFAULT_HOP)
             await self.update_globe_message(interaction)
         async def right(interaction : discord.Interaction):
-            change_longitude(25)
+            change_longitude(DEFAULT_HOP)
             await self.update_globe_message(interaction)
         async def up(interaction : discord.Interaction):
-            change_latitude(25)
+            change_latitude(DEFAULT_HOP)
             await self.update_globe_message(interaction)
         async def down(interaction : discord.Interaction):
-            change_latitude(-25)
+            change_latitude(-DEFAULT_HOP)
             await self.update_globe_message(interaction)
 
         def button_id(text_fragment: str) -> str:
