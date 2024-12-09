@@ -6,12 +6,21 @@ from GlobeHandler import GlobeHandler
 from GlobeView import GlobeView
 from GlobeUtils import normalize_input, coordinates_text
 
+from sqlalchemy import create_engine, Column, Integer, Float
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+Base = declarative_base()
+
 class GlobeMessage():
 
-    def __init__(self, message: discord.Message):
+    def __init__(self, message: discord.Message, coords: list[float] | None = None):
         self.message = message
         self.embed_message = None
-        self.coords: list[float] = [0,0]
+        if(coords == None):
+            coords = [0,0]
+        assert coords is not None
+        self.coords: list[float] = coords
         self.globe_handler = GlobeHandler(self.the_map_path_from_message())
 
     def the_map_path_from_message(self):
@@ -38,9 +47,13 @@ class GlobeMessage():
         def change_latitude(change: float):
             self.coords[0] += change
             self.coords = normalize_input(self.coords)
+            session.query(GlobeMessageORM).filter(GlobeMessageORM.message_id == self.message.id).update({'latitude': self.coords[0]})
+            session.commit()
         def change_longitude(change: float):
             self.coords[1] += change
             self.coords = normalize_input(self.coords)
+            session.query(GlobeMessageORM).filter(GlobeMessageORM.message_id == self.message.id).update({'longitude': self.coords[1]})
+            session.commit()
 
         async def left(interaction : discord.Interaction):
             change_longitude(-25)
@@ -109,3 +122,30 @@ class GlobeMessage():
 
     def get_message(self) -> discord.Message | None: 
         return self.message
+    
+class GlobeMessageORM(Base):
+    __tablename__ = 'globe_messages'
+
+    message_id = Column(Integer, primary_key=True)
+    channel_id = Column(Integer)
+    latitude = Column(Float)
+    longitude = Column(Float)
+
+engine = create_engine('sqlite:///example.db', echo=True)  # SQLite database
+Session = sessionmaker(bind=engine)
+session = Session()
+Base.metadata.create_all(engine)
+
+def save_message_to_db(globe_message: GlobeMessage):
+    orm_instance = GlobeMessageORM(
+        message_id=globe_message.message.id,
+        channel_id = globe_message.message.channel.id,
+        latitude = globe_message.coords[0],
+        longitude = globe_message.coords[1]
+    )
+    session.add(orm_instance)
+    session.commit()
+
+def get_all_globe_messages():
+    messages = session.query(GlobeMessageORM).all()
+    return messages
