@@ -9,7 +9,7 @@ from bot import Bot
 load_dotenv()
 
 # Create an instance of the bot with proper intents
-intents = discord.Intents.default()  # Modify intents if needed
+intents = discord.Intents.all()  # Modify intents if needed
 bot = Bot(intents=intents)
 
 # Event triggered when the bot is ready
