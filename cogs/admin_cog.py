@@ -6,7 +6,7 @@ from globe.globe_dedicated_channel import add_globe_dedicated_channel, remove_gl
 
 ALL_PERMISSIONS = discord.PermissionOverwrite.from_pair(discord.Permissions.all(), discord.Permissions.none())
 
-class FeudalCog(commands.Cog):
+class AdminCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -89,4 +89,4 @@ class FeudalCog(commands.Cog):
         self.bot.refresh_map_channels()
 
 def setup(bot):
-    bot.add_cog(FeudalCog(bot))
+    bot.add_cog(AdminCog(bot))

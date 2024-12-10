@@ -10,7 +10,7 @@ intents = discord.Intents.all()
 bot = Bot(intents=intents)
 
 if __name__ == "__main__":
-    bot.load_extension('cogs.feudal_cog')
+    bot.load_extension('cogs.admin_cog')
     TOKEN: str = os.getenv("DISCORD_TOKEN", "")
     if not TOKEN:
         raise ValueError("DISCORD_TOKEN not found in the .env file.")
