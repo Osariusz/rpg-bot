@@ -15,7 +15,6 @@ class Bot(commands.Bot):
         self.map_channels = [channel.id for channel in get_all_globe_dedicated_channels()]
 
     async def on_ready(self) -> None:
-        print(f"Bot is online! Logged in as {self.user}")
         Base.metadata.create_all(engine)
         channel_message_ids: list[GlobeMessageORM] = get_all_globe_messages()
         for globe_message_orm in channel_message_ids:
@@ -27,6 +26,7 @@ class Bot(commands.Bot):
                 self.add_view(globe_message.create_globe_view())
             except Exception as e:
                 print(e)
+        print(f"Bot is online! Logged in as {self.user}")
 
 
     async def on_message(self, message: discord.Message):
