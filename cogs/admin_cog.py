@@ -79,6 +79,7 @@ class AdminCog(commands.Cog):
         channel: discord.TextChannel = await self.bot.fetch_channel(channel_id)
         if(channel.guild.id != ctx.guild_id):
             await ctx.respond("Please use this command on the guild of this channel!")
+            return
         channel_id = int(channel_id)
         add_globe_dedicated_channel(channel_id)
         self.bot.refresh_map_channels()
@@ -90,6 +91,7 @@ class AdminCog(commands.Cog):
         channel: discord.TextChannel = await self.bot.fetch_channel(channel_id)
         if(channel.guild.id != ctx.guild_id):
             await ctx.respond("Please use this command on the guild of this channel!")
+            return
         channel_id = int(channel_id)
         remove_globe_dedicated_channel(channel_id)
         self.bot.refresh_map_channels()
