@@ -2,15 +2,12 @@ import os
 from pathlib import Path
 import discord
 
+from db.db import Base, engine, session
 from globe.globe_handler import GlobeHandler
 from globe.globe_view import GlobeView
 from globe.globe_utils import normalize_input, coordinates_text
 
-from sqlalchemy import create_engine, Column, Integer, Float
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, Float
 
 class GlobeMessage():
 
@@ -131,11 +128,6 @@ class GlobeMessageORM(Base):
     channel_id = Column(Integer)
     latitude = Column(Float)
     longitude = Column(Float)
-
-engine = create_engine('sqlite:///example.db', echo=True)  # SQLite database
-Session = sessionmaker(bind=engine)
-session = Session()
-Base.metadata.create_all(engine)
 
 def save_message_to_db(globe_message: GlobeMessage):
     orm_instance = GlobeMessageORM(
