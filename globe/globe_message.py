@@ -90,7 +90,7 @@ class GlobeMessage():
         self.globe_handler.generate_planet_image(self.coords, self.temp_map_path())
 
         file = discord.File(self.temp_map_path())
-        assert isinstance(self.message.channel, discord.TextChannel)
+        assert isinstance(self.message.channel, discord.TextChannel) or isinstance(self.message.channel, discord.Thread)
         channel: discord.TextChannel = self.message.channel
 
         embed = discord.Embed(

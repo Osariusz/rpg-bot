@@ -21,7 +21,7 @@ class Bot(commands.Bot):
         for globe_message_orm in channel_message_ids:
             try:
                 channel = await self.fetch_channel(int(globe_message_orm.channel_id))
-                assert isinstance(channel, discord.TextChannel)
+                assert isinstance(self.message.channel, discord.TextChannel) or isinstance(self.message.channel, discord.Thread)
                 message = await channel.fetch_message(int(globe_message_orm.message_id))
                 globe_message = GlobeMessage(message, [float(globe_message_orm.latitude), float(globe_message_orm.longitude)])
                 self.add_view(globe_message.create_globe_view())

@@ -121,7 +121,10 @@ class AdminCog(commands.Cog):
             except Exception as e:
                 print(e)
 
-        await ctx.respond("\n".join(output_channels_names))
+        response: str = "\n".join(output_channels_names)
+        if(response == ''):
+            response = "No channels"
+        await ctx.respond(response)
 
 def setup(bot):
     bot.add_cog(AdminCog(bot))
