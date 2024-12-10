@@ -87,19 +87,24 @@ class GlobeMessage():
 
     async def get_current_state(self):
         await self.save_the_map()
-        self.globe_handler.generate_planet_image(self.coords, self.temp_map_path())
+        try:
+            self.globe_handler.generate_planet_image(self.coords, self.temp_map_path())
 
-        file = discord.File(self.temp_map_path())
-        assert isinstance(self.message.channel, discord.TextChannel) or isinstance(self.message.channel, discord.Thread)
-        channel: discord.TextChannel = self.message.channel
+            file = discord.File(self.temp_map_path())
+            assert isinstance(self.message.channel, discord.TextChannel) or isinstance(self.message.channel, discord.Thread)
+            channel: discord.TextChannel = self.message.channel
 
-        embed = discord.Embed(
-            title=f"{channel.name.capitalize()} {self.message.created_at.strftime('%d.%m.%Y')}",
-            description=coordinates_text(self.coords),
-            color=discord.Colour.blurple()
-        )
-        embed.set_image(url=f"attachment://{self.the_map_filename_from_message()}")
-        return (file, embed)
+            embed = discord.Embed(
+                title=f"{channel.name.capitalize()} {self.message.created_at.strftime('%d.%m.%Y')}",
+                description=coordinates_text(self.coords),
+                color=discord.Colour.blurple()
+            )
+            embed.set_image(url=f"attachment://{self.the_map_filename_from_message()}")
+            return (file, embed)
+        except Exception as e:
+            print(e)
+            self.delete_the_map()
+            self.delete_temp_map()
 
     def create_globe_view(self):
         return GlobeView(self.create_buttons())
