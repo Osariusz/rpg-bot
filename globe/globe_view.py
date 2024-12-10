@@ -1,6 +1,6 @@
 import discord
 
-from GlobeHandler import GlobeHandler
+from globe.globe_handler import GlobeHandler
 
 class GlobeView(discord.ui.View):
 

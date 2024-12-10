@@ -2,9 +2,9 @@ import os
 from pathlib import Path
 import discord
 
-from globeHandler import GlobeHandler
-from GlobeView import GlobeView
-from GlobeUtils import normalize_input, coordinates_text
+from globe.globe_handler import GlobeHandler
+from globe_view import GlobeView
+from globe_utils import normalize_input, coordinates_text
 
 from sqlalchemy import create_engine, Column, Integer, Float
 from sqlalchemy.ext.declarative import declarative_base

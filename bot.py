@@ -1,7 +1,7 @@
 from typing import Any
 from discord.ext import commands
 import discord
-from GlobeMessage import GlobeMessage, save_message_to_db, get_all_globe_messages, GlobeMessageORM
+from globe.globe_message import GlobeMessage, save_message_to_db, get_all_globe_messages, GlobeMessageORM
 
 class Bot(commands.Bot):
 
