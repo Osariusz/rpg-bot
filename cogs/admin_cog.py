@@ -73,7 +73,7 @@ class AdminCog(commands.Cog):
         await ctx.respond('Feudalized!')
 
     @discord.slash_command()
-    async def add_globe_dedicated_channel(self, ctx: discord.commands.context.ApplicationContext, channel_id:str = None):
+    async def globe_dedicate_channel(self, ctx: discord.commands.context.ApplicationContext, channel_id:str = None):
         if(channel_id == None):
             channel_id = ctx.channel_id
         channel: discord.TextChannel = await self.bot.fetch_channel(channel_id)
@@ -91,7 +91,7 @@ class AdminCog(commands.Cog):
         await ctx.respond(f"Channel {channel_id} added to globe dedicated channels")
 
     @discord.slash_command()
-    async def remove_globe_dedicated_channel(self, ctx: discord.commands.context.ApplicationContext, channel_id:str = None):
+    async def globe_undedicate_channel(self, ctx: discord.commands.context.ApplicationContext, channel_id:str = None):
         if(channel_id == None):
             channel_id = ctx.channel_id
         channel: discord.TextChannel = await self.bot.fetch_channel(channel_id)
