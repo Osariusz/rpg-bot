@@ -6,4 +6,3 @@ Base = declarative_base()
 engine = create_engine('sqlite:///example.db', echo=True)  # SQLite database
 Session = sessionmaker(bind=engine)
 session = Session()
-Base.metadata.create_all(engine)

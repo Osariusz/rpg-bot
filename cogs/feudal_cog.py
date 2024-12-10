@@ -2,6 +2,7 @@ from typing import Optional
 import discord
 from discord.ext import commands
 import random
+from globe.globe_dedicated_channel import add_globe_dedicated_channel, remove_globe_dedicated_channel
 
 ALL_PERMISSIONS = discord.PermissionOverwrite.from_pair(discord.Permissions.all(), discord.Permissions.none())
 
@@ -70,6 +71,22 @@ class FeudalCog(commands.Cog):
         await self.create_roles(ctx.guild, role_list)
         await self.create_role_based_structure(ctx.guild, role_list)
         await ctx.respond('Feudalized!')
+
+    @discord.slash_command()
+    async def add_globe_dedicated_channel(self, ctx: discord.commands.context.ApplicationContext, channel_id:str = None):
+        if(channel_id == None):
+            channel_id = ctx.channel_id
+        channel_id = int(channel_id)
+        add_globe_dedicated_channel(channel_id)
+        self.bot.refresh_map_channels()
+
+    @discord.slash_command()
+    async def remove_globe_dedicated_channel(self, ctx: discord.commands.context.ApplicationContext, channel_id:str = None):
+        if(channel_id == None):
+            channel_id = ctx.channel_id
+        channel_id = int(channel_id)
+        remove_globe_dedicated_channel(channel_id)
+        self.bot.refresh_map_channels()
 
 def setup(bot):
     bot.add_cog(FeudalCog(bot))
