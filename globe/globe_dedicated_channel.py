@@ -2,12 +2,8 @@ import os
 from pathlib import Path
 import discord
 
-from db.db import Base, engine, session
-from globe.globe_handler import GlobeHandler
-from globe.globe_view import GlobeView
-from globe.globe_utils import normalize_input, coordinates_text
-
-from sqlalchemy import Column, Integer, Float
+from db.db import Base, session
+from sqlalchemy import Column, Integer
 
 class GlobeDedicatedChannelORM(Base):
     __tablename__ = 'globe_dedicated_channels'
