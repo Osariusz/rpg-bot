@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 import discord
 
-from GlobeHandler import GlobeHandler
+from globeHandler import GlobeHandler
 from GlobeView import GlobeView
 from GlobeUtils import normalize_input, coordinates_text
 
