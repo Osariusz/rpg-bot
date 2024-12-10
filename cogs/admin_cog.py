@@ -2,7 +2,7 @@ from typing import Optional
 import discord
 from discord.ext import commands
 import random
-from globe.globe_dedicated_channel import add_globe_dedicated_channel, remove_globe_dedicated_channel
+from globe.globe_dedicated_channel import GlobeDedicatedChannelORM, add_globe_dedicated_channel, remove_globe_dedicated_channel, get_all_globe_dedicated_channels
 
 ALL_PERMISSIONS = discord.PermissionOverwrite.from_pair(discord.Permissions.all(), discord.Permissions.none())
 
@@ -78,11 +78,17 @@ class AdminCog(commands.Cog):
             channel_id = ctx.channel_id
         channel: discord.TextChannel = await self.bot.fetch_channel(channel_id)
         if(channel.guild.id != ctx.guild_id):
-            await ctx.respond("Please use this command on the guild of this channel!")
+            await ctx.respond("Please use this command on the guild of this channel")
             return
         channel_id = int(channel_id)
-        add_globe_dedicated_channel(channel_id)
+        try:
+            add_globe_dedicated_channel(channel_id)
+        except IndexError:
+            await ctx.respond(f"Channel {channel_id} is already globe dedicated channel")
+            return
+
         self.bot.refresh_map_channels()
+        await ctx.respond(f"Channel {channel_id} added to globe dedicated channels")
 
     @discord.slash_command()
     async def remove_globe_dedicated_channel(self, ctx: discord.commands.context.ApplicationContext, channel_id:str = None):
@@ -93,8 +99,29 @@ class AdminCog(commands.Cog):
             await ctx.respond("Please use this command on the guild of this channel!")
             return
         channel_id = int(channel_id)
-        remove_globe_dedicated_channel(channel_id)
+        try:
+            remove_globe_dedicated_channel(channel_id)
+        except IndexError:
+            await ctx.respond(f"Channel {channel_id} is not globe dedicated channel")
+            return
+
         self.bot.refresh_map_channels()
+        await ctx.respond(f"Channel {channel_id} removed from globe dedicated channels")
+
+    @discord.slash_command()
+    async def print_globe_dedicated_channels(self, ctx: discord.commands.context.ApplicationContext):
+        all_channels_ids: list[GlobeDedicatedChannelORM] = get_all_globe_dedicated_channels()
+        output_channels_names: list[str] = []
+        for channelORM in all_channels_ids:
+            channel_id = channelORM.id
+            try:
+                channel: discord.TextChannel = await self.bot.fetch_channel(channel_id)
+                if(channel.guild.id == ctx.guild_id):
+                    output_channels_names.append(f"{channel.name} ({channel.id})")
+            except Exception as e:
+                print(e)
+
+        await ctx.respond("\n".join(output_channels_names))
 
 def setup(bot):
     bot.add_cog(AdminCog(bot))

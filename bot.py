@@ -16,6 +16,7 @@ class Bot(commands.Bot):
 
     async def on_ready(self) -> None:
         Base.metadata.create_all(engine)
+        self.refresh_map_channels()
         channel_message_ids: list[GlobeMessageORM] = get_all_globe_messages()
         for globe_message_orm in channel_message_ids:
             try:
