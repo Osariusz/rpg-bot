@@ -4,6 +4,7 @@ import discord
 from globe.globe_message import GlobeMessage, save_message_to_db, get_all_globe_messages, GlobeMessageORM
 from globe.globe_dedicated_channel import get_all_globe_dedicated_channels
 from db.db import Base, engine
+import pyvista
 
 class Bot(commands.Bot):
 
@@ -15,13 +16,14 @@ class Bot(commands.Bot):
         self.map_channels = [channel.id for channel in get_all_globe_dedicated_channels()]
 
     async def on_ready(self) -> None:
+        pyvista.start_xvfb()
         Base.metadata.create_all(engine)
         self.refresh_map_channels()
         channel_message_ids: list[GlobeMessageORM] = get_all_globe_messages()
         for globe_message_orm in channel_message_ids:
             try:
                 channel = await self.fetch_channel(int(globe_message_orm.channel_id))
-                assert isinstance(self.message.channel, discord.TextChannel) or isinstance(self.message.channel, discord.Thread)
+                assert isinstance(channel, discord.TextChannel) or isinstance(channel, discord.Thread)
                 message = await channel.fetch_message(int(globe_message_orm.message_id))
                 globe_message = GlobeMessage(message, [float(globe_message_orm.latitude), float(globe_message_orm.longitude)])
                 self.add_view(globe_message.create_globe_view())
