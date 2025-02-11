@@ -30,10 +30,12 @@ class GlobeMessage():
         return Path(f"temp/{self.the_map_filename_from_message()}")
 
     async def save_the_map(self):
-        the_map = self.message.attachments[0]
-        await the_map.save(self.the_map_path_from_message()) 
+        if(not os.path.isfile(self.the_map_path_from_message())):
+            the_map = self.message.attachments[0]
+            await the_map.save(self.the_map_path_from_message()) 
     
     def delete_the_map(self):
+        return
         os.remove(self.the_map_path_from_message())
     
     def delete_temp_map(self):
@@ -110,6 +112,7 @@ class GlobeMessage():
         return GlobeView(self.create_buttons())
 
     async def update_globe_message(self, interaction : discord.Interaction):
+        await interaction.response.defer()
         file, embed = await self.get_current_state()
 
         await interaction.edit(view=self.create_globe_view(), file=file, embed=embed)
