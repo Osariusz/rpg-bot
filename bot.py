@@ -1,3 +1,4 @@
+import os
 from typing import Any
 from discord.ext import commands
 import discord
@@ -16,7 +17,9 @@ class Bot(commands.Bot):
         self.map_channels = [channel.id for channel in get_all_globe_dedicated_channels()]
 
     async def on_ready(self) -> None:
-        pyvista.start_xvfb()
+        should_start_xvfb: bool = os.getenv("START_XVFB", False) == "True"
+        if(should_start_xvfb):
+            pyvista.start_xvfb()
         Base.metadata.create_all(engine)
         self.refresh_map_channels()
         channel_message_ids: list[GlobeMessageORM] = get_all_globe_messages()
