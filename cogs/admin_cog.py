@@ -1,7 +1,9 @@
+from datetime import datetime
 from typing import Optional
 import discord
 from discord.ext import commands
 import random
+from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, get_statistic_sum, get_statistics, get_users, save_to_db
 from globe.globe_dedicated_channel import GlobeDedicatedChannelORM, add_globe_dedicated_channel, remove_globe_dedicated_channel, get_all_globe_dedicated_channels
 
 ALL_PERMISSIONS = discord.PermissionOverwrite.from_pair(discord.Permissions.all(), discord.Permissions.none())
@@ -16,6 +18,8 @@ class AdminCog(commands.Cog):
             return True
         else:
             await ctx.respond("You need administrator permissions to use commands in this cog.")
+
+    ### Feudalization Commands
 
     async def create_roles(self, guild: discord.Guild, role_list: list[str]) -> None:
         if not role_list:
@@ -72,6 +76,8 @@ class AdminCog(commands.Cog):
         await self.create_role_based_structure(ctx.guild, role_list)
         await ctx.respond('Feudalized!')
 
+    ### Globe commands
+
     @discord.slash_command()
     async def globe_dedicate_channel(self, ctx: discord.commands.context.ApplicationContext, channel_id:str = None):
         if(channel_id == None):
@@ -125,6 +131,54 @@ class AdminCog(commands.Cog):
         if(response == ''):
             response = "No channels"
         await ctx.respond(response)
+
+    ### Statistic Commands
+    @discord.slash_command()
+    async def add_new_user(self, ctx: discord.commands.context.ApplicationContext, name: str, country: str = None):
+        save_to_db(UserORM(name=name, server_id=ctx.guild_id, country=country))
+        await ctx.respond(f"Added user {name}")
+
+    @discord.slash_command()
+    async def add_new_statistic(self, ctx: discord.commands.context.ApplicationContext, name: str, type: str, sort_behavior: int = 0, max_name: str = ""):
+        if(max_name == ""):
+            max_name = None
+        save_to_db(StatisticORM(name=name, type=type, max_name=max_name, server_id=ctx.guild_id, sort_behavior=sort_behavior))
+        await ctx.respond(f"Added statistic {name}")
+        
+    def user_autocomplete(ctx : discord.AutocompleteContext):
+        print(ctx.interaction.guild_id)
+        return [user.name for user in get_users(ctx.interaction.guild_id)]
+    
+    def statistic_autocomplete(ctx : discord.AutocompleteContext):
+        return [user.name for user in get_statistics(ctx.interaction.guild_id)]
+
+    @discord.slash_command()
+    async def statistic_change(self, 
+                                   ctx: discord.commands.context.ApplicationContext, 
+                                   user_name: discord.Option(str, autocomplete=user_autocomplete), 
+                                   statistic: discord.Option(str, autocomplete=statistic_autocomplete), 
+                                   value: discord.Option(int, description="Amount to modify statistic, can be negative"),
+                                   comment: discord.Option(str) = ""
+                                   ):
+        save_to_db(StatisticChangeORM(
+            user_name=user_name, 
+            statistic=statistic, 
+            value=value,
+            date=datetime.now(),
+            comment=comment,
+            server_id=ctx.guild_id
+        ))
+        await ctx.respond(f"Added statistic change for {user_name}")
+
+    @discord.slash_command()
+    async def statistic(self, 
+                                   ctx: discord.commands.context.ApplicationContext, 
+                                   statistic: discord.Option(str, autocomplete=statistic_autocomplete), 
+                                   ):
+        result = "\n".join([f"({row[2]}) {row[0]}: {row[1]}" for row in get_statistic_sum(ctx.interaction.guild_id, statistic)])
+        await ctx.respond(f"# {statistic}\n{result}")
+    
+
 
 def setup(bot):
     bot.add_cog(AdminCog(bot))

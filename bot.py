@@ -6,6 +6,7 @@ from globe.globe_message import GlobeMessage, save_message_to_db, get_all_globe_
 from globe.globe_dedicated_channel import get_all_globe_dedicated_channels
 from db.db import Base, engine
 import pyvista
+from db.statistics import UserORM, save_to_db
 
 class Bot(commands.Bot):
 
@@ -20,6 +21,7 @@ class Bot(commands.Bot):
         should_start_xvfb: bool = os.getenv("START_XVFB", False) == "True"
         if(should_start_xvfb):
             pyvista.start_xvfb()
+
         Base.metadata.create_all(engine)
         self.refresh_map_channels()
         channel_message_ids: list[GlobeMessageORM] = get_all_globe_messages()
