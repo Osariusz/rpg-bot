@@ -3,7 +3,7 @@ from typing import Optional
 import discord
 from discord.ext import commands
 import random
-from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, get_statistic_sum, get_statistics, get_users, save_to_db
+from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, get_statistic_sum, get_statistics, get_users, save_to_db, update_user_country
 from globe.globe_dedicated_channel import GlobeDedicatedChannelORM, add_globe_dedicated_channel, remove_globe_dedicated_channel, get_all_globe_dedicated_channels
 
 ALL_PERMISSIONS = discord.PermissionOverwrite.from_pair(discord.Permissions.all(), discord.Permissions.none())
@@ -137,6 +137,11 @@ class AdminCog(commands.Cog):
     async def add_new_user(self, ctx: discord.commands.context.ApplicationContext, name: str, country: str = None):
         save_to_db(UserORM(name=name, server_id=ctx.guild_id, country=country))
         await ctx.respond(f"Added user {name}")
+
+    @discord.slash_command()
+    async def update_user_country(self, ctx: discord.commands.context.ApplicationContext, name: str, country: str = None):
+        update_user_country(name, country)
+        await ctx.respond(f"Changed user {name}")
 
     @discord.slash_command()
     async def add_new_statistic(self, ctx: discord.commands.context.ApplicationContext, name: str, type: str, sort_behavior: int = 0, max_name: str = ""):

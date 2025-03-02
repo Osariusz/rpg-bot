@@ -88,5 +88,13 @@ def get_statistic_user(statistic: String, user_name: String):
 def get_users(server_id: int) -> list[UserORM]:
     return session.query(UserORM).filter_by(server_id=server_id).all()
 
+def update_user_country(name: str, new_country: str) -> None:
+    user = session.query(UserORM).filter_by(name=name).first()
+    if user:
+        user.country = new_country
+        session.commit()
+    else:
+        raise ValueError("User not found")
+
 def get_statistics(server_id: int) -> list[StatisticORM]:
     return session.query(StatisticORM).filter_by(server_id=server_id).all()
