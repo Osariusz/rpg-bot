@@ -3,6 +3,7 @@ from typing import Optional
 import discord
 from discord.ext import commands
 import random
+from db.message_thread import add_message_thread_channel
 from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, get_statistic_sum, get_statistics, get_users, save_to_db, update_user_country
 from globe.globe_dedicated_channel import GlobeDedicatedChannelORM, add_globe_dedicated_channel, remove_globe_dedicated_channel, get_all_globe_dedicated_channels
 
@@ -75,6 +76,27 @@ class AdminCog(commands.Cog):
         await self.create_roles(ctx.guild, role_list)
         await self.create_role_based_structure(ctx.guild, role_list)
         await ctx.respond('Feudalized!')
+
+    ### Message thread commands
+
+    @discord.slash_command()
+    async def add_message_thread_channel(self, ctx: discord.commands.context.ApplicationContext, channel_id:str = None):
+        if(channel_id == None):
+            channel_id = ctx.channel_id
+        channel: discord.TextChannel = await self.bot.fetch_channel(channel_id)
+        if(channel.guild.id != ctx.guild_id):
+            await ctx.respond("Please use this command on the guild of this channel")
+            return
+        channel_id = int(channel_id)
+        try:
+            add_message_thread_channel(channel_id)
+        except IndexError:
+            await ctx.respond(f"Channel {channel_id} is already globe dedicated channel")
+            return
+
+        self.bot.refresh_message_thread_channels()
+        await ctx.respond(f"Channel {channel_id} added to globe dedicated channels")
+
 
     ### Globe commands
 

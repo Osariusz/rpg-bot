@@ -2,6 +2,7 @@ import os
 from typing import Any
 from discord.ext import commands
 import discord
+from db.message_thread import get_all_message_thread_channels
 from globe.globe_message import GlobeMessage, save_message_to_db, get_all_globe_messages, GlobeMessageORM
 from globe.globe_dedicated_channel import get_all_globe_dedicated_channels
 from db.db import Base, engine
@@ -13,9 +14,13 @@ class Bot(commands.Bot):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.map_channels = []
+        self.message_thread_channels = []
 
     def refresh_map_channels(self):
         self.map_channels = [channel.id for channel in get_all_globe_dedicated_channels()]
+
+    def refresh_message_thread_channels(self):
+        self.message_thread_channels = [channel.id for channel in get_all_message_thread_channels()]
 
     async def on_ready(self) -> None:
         should_start_xvfb: bool = os.getenv("START_XVFB", False) == "True"
@@ -24,6 +29,7 @@ class Bot(commands.Bot):
 
         Base.metadata.create_all(engine)
         self.refresh_map_channels()
+        self.refresh_message_thread_channels()
         channel_message_ids: list[GlobeMessageORM] = get_all_globe_messages()
         for globe_message_orm in channel_message_ids:
             try:
