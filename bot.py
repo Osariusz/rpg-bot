@@ -53,6 +53,6 @@ class Bot(commands.Bot):
             name: str = "thread"
             if(len(message_content_lines) > 0 and len(message_content_lines[0]) > 0):
                 name = message_content_lines[0]
-            await message.channel.create_thread(name=name)
+            await message.create_thread(name=name)
 
         
