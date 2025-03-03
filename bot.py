@@ -49,7 +49,7 @@ class Bot(commands.Bot):
             await globe_message.send_globe_message()
             save_message_to_db(globe_message)
         if(not message.author.bot and message.channel.id in self.message_thread_channels):
-            message_content_lines: list[str] = message.content.split("\n")
+            message_content_lines: list[str] = message.clean_content.split("\n")
             name: str = "thread"
             if(len(message_content_lines) > 0 and len(message_content_lines[0]) > 0):
                 name = message_content_lines[0]
