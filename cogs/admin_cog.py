@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 import random
 from db.message_thread import add_message_thread_channel, remove_message_thread_channel
-from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, get_statistic_sum, get_statistics, get_users, save_to_db, update_user_country
+from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, get_statistic_data, get_statistics, get_users, save_to_db, update_user_country
 from globe.globe_dedicated_channel import GlobeDedicatedChannelORM, add_globe_dedicated_channel, remove_globe_dedicated_channel, get_all_globe_dedicated_channels
 
 ALL_PERMISSIONS = discord.PermissionOverwrite.from_pair(discord.Permissions.all(), discord.Permissions.none())
@@ -227,7 +227,10 @@ class AdminCog(commands.Cog):
                                    ctx: discord.commands.context.ApplicationContext, 
                                    statistic: discord.Option(str, autocomplete=statistic_autocomplete), 
                                    ):
-        result = "\n".join([f"({row[2]}) {row[0]}: {row[1]}" for row in get_statistic_sum(ctx.interaction.guild_id, statistic)])
+        result = "\n".join([
+            f"({row[2]}) {row[0]}: {row[1]}" + (f"/{row[3]}" if len(row) > 3 else "")
+            for row in get_statistic_data(ctx.interaction.guild_id, statistic)
+        ])
         await ctx.respond(f"# {statistic}\n{result}")
     
 

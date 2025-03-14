@@ -53,7 +53,7 @@ class StatisticShowInfo():
         else:
             self.sort_priorities = []
 
-def get_statistic_sum(server_id: int, statistic: str):
+def get_statistic_raw_data(server_id: int, statistic: str) -> list:
     value_sum = func.sum(StatisticChangeORM.value).label("total_value")
     sort_behavior = session.query(
                 StatisticORM.sort_behavior
@@ -80,6 +80,24 @@ def get_statistic_sum(server_id: int, statistic: str):
     result = result.all()
 
     return result
+
+def get_statistic_data(server_id: int, statistic: str):
+    result = get_statistic_raw_data(server_id, statistic)
+
+    statistic_config: StatisticChangeORM | None = session.query(StatisticORM).filter(StatisticORM.name == statistic).one_or_none()
+    
+    if statistic_config and statistic_config.max_name:
+        max_statistic_name = statistic_config.max_name
+        max_statistic_result = get_statistic_raw_data(server_id, max_statistic_name)
+
+        # Create a dictionary for quick lookup
+        max_stat_dict = {name: stat for name, stat, *_ in max_statistic_result}
+
+        # Create new tuples with the additional value
+        result = tuple((*statistic_tuple, max_stat_dict.get(statistic_tuple[0], 0)) for statistic_tuple in result)
+
+    return result
+
 
 def get_statistic_user(statistic: String, user_name: String):
     messages = session.query(StatisticChangeORM).execute(select(StatisticChangeORM).where(StatisticChangeORM.user_name == user_name)).all()
