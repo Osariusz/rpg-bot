@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum, IntEnum
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, func, select
 
@@ -31,6 +32,12 @@ class StatisticChangeORM(Base):
     comment = Column(String)
     server_id = Column(Integer)
 
+class EndTurnORM(Base):
+    __tablename__ = 'end_turn'
+
+    id = Column(Integer, primary_key=True)
+    date = Column(DateTime)
+
 def save_to_db(user: UserORM | StatisticORM | StatisticChangeORM):
     session.add(user)
     session.commit()
@@ -53,33 +60,49 @@ class StatisticShowInfo():
         else:
             self.sort_priorities = []
 
-def get_statistic_raw_data(server_id: int, statistic: str) -> list:
+def get_statistic_raw_data(server_id: int, statistic: str, only_before_last_turn: bool = False) -> list:
     value_sum = func.sum(StatisticChangeORM.value).label("total_value")
-    sort_behavior = session.query(
-                StatisticORM.sort_behavior
-            ).where(StatisticORM.name == statistic).scalar()
+
+    # Get the last EndTurnORM date
+    last_turn_date = session.query(func.max(EndTurnORM.date)).scalar()
+
+    sort_behavior = session.query(StatisticORM.sort_behavior).where(StatisticORM.name == statistic).scalar()
     info = StatisticShowInfo(sort_behavior)
 
-    #TODO: show users without changes as 0 
-    #TODO: add max value in (brackets)
-    result = session.query(
+    # Query statistics
+    query = session.query(
             StatisticChangeORM.user_name, 
             value_sum,
             UserORM.country
         ).join(UserORM, UserORM.name == StatisticChangeORM.user_name).filter(
         (StatisticChangeORM.server_id == server_id) & 
         (StatisticChangeORM.statistic == statistic)
-    ).group_by(StatisticChangeORM.user_name)
+    )
 
+    # Apply the date filter based on the argument
+    if last_turn_date and only_before_last_turn:
+        query = query.filter(StatisticChangeORM.date < last_turn_date)
+
+    query = query.group_by(StatisticChangeORM.user_name)
+
+    # Apply sorting
     for sort_priority in info.sort_priorities:
-        if(sort_priority == StatisticsShowInfoSortType.NATION):
-            result = result.order_by(UserORM.country)
-        if(sort_priority == StatisticsShowInfoSortType.VALUE):
-            result = result.order_by(value_sum.desc())
+        if sort_priority == StatisticsShowInfoSortType.NATION:
+            query = query.order_by(UserORM.country)
+        if sort_priority == StatisticsShowInfoSortType.VALUE:
+            query = query.order_by(value_sum.desc())
 
-    result = result.all()
+    return query.all() if last_turn_date or not only_before_last_turn else []
 
-    return result
+def add_end_turn():
+    """Adds a new EndTurnORM entry with the current timestamp."""
+    session.add(EndTurnORM(date=datetime.utcnow()))
+    session.commit()
+
+def delete_end_turn_by_day(day: datetime):
+    """Deletes all EndTurnORM entries for the specified date."""
+    session.query(EndTurnORM).filter(func.date(EndTurnORM.date) == day.date()).delete()
+    session.commit()
 
 def get_statistic_data(server_id: int, statistic: str):
     result = get_statistic_raw_data(server_id, statistic)

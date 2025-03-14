@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 import random
 from db.message_thread import add_message_thread_channel, remove_message_thread_channel
-from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, get_statistic_data, get_statistics, get_users, save_to_db, update_user_country
+from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, add_end_turn, delete_end_turn_by_day, get_statistic_data, get_statistics, get_users, save_to_db, update_user_country
 from globe.globe_dedicated_channel import GlobeDedicatedChannelORM, add_globe_dedicated_channel, remove_globe_dedicated_channel, get_all_globe_dedicated_channels
 
 ALL_PERMISSIONS = discord.PermissionOverwrite.from_pair(discord.Permissions.all(), discord.Permissions.none())
@@ -228,11 +228,30 @@ class AdminCog(commands.Cog):
                                    statistic: discord.Option(str, autocomplete=statistic_autocomplete), 
                                    ):
         result = "\n".join([
-            f"({row[2]}) {row[0]}: {row[1]}" + (f"/{row[3]}" if len(row) > 3 else "")
+            f"({row[2]}) {row[0]}: {row[1]}" + (f" (na turę: {row[3]})" if len(row) > 3 else "")
             for row in get_statistic_data(ctx.interaction.guild_id, statistic)
         ])
         await ctx.respond(f"# {statistic}\n{result}")
     
+        # NEW COMMAND: Finish Turn
+    @discord.slash_command()
+    async def finish_turn(self, ctx: discord.commands.context.ApplicationContext):
+        """Ends the current turn by adding a new EndTurnORM entry."""
+        add_end_turn()
+        await ctx.respond("Turn finished. All new statistics will now start from this point.")
+
+    # NEW COMMAND: Delete Turn by Day
+    @discord.slash_command()
+    async def delete_turn_by_day(self, 
+                                 ctx: discord.commands.context.ApplicationContext, 
+                                 date: discord.Option(str, description="Date in YYYY-MM-DD format")):
+        """Deletes an end-turn entry for a specific day."""
+        try:
+            date_obj = datetime.strptime(date, "%Y-%m-%d")
+            delete_end_turn_by_day(date_obj)
+            await ctx.respond(f"Deleted all end-turn entries for {date}.")
+        except ValueError:
+            await ctx.respond("Invalid date format! Use YYYY-MM-DD.")
 
 
 def setup(bot):
