@@ -94,10 +94,71 @@ def get_statistic_raw_data(server_id: int, statistic: str, only_before_last_turn
 
     return query.all() if last_turn_date or not only_before_last_turn else []
 
+def end_turn_with_max_adjustment(server_id: int):
+    # First, add an end turn entry
+    add_end_turn()
+
+    # Query for all statistic configurations that have a max_name defined for this server
+    stat_configs = session.query(StatisticORM).filter(
+        StatisticORM.server_id == server_id,
+        StatisticORM.max_name.isnot(None)
+    ).all()
+
+    # Get all users in the given server
+    users = get_users(server_id)
+
+    # For each statistic that has a maximum counterpart, adjust every user's current total.
+    for stat_config in stat_configs:
+        base_stat = stat_config.name
+        max_stat = stat_config.max_name
+
+        for user in users:
+            # Get the current total for the base statistic for this user
+            current_value = session.query(func.sum(StatisticChangeORM.value)).filter(
+                StatisticChangeORM.user_name == user.name,
+                StatisticChangeORM.statistic == base_stat,
+                StatisticChangeORM.server_id == server_id
+            ).scalar() or 0
+
+            # Get the current total for the corresponding max statistic for this user
+            max_value = session.query(func.sum(StatisticChangeORM.value)).filter(
+                StatisticChangeORM.user_name == user.name,
+                StatisticChangeORM.statistic == max_stat,
+                StatisticChangeORM.server_id == server_id
+            ).scalar() or 0
+
+            # Calculate the adjustment needed (max - current)
+            adjustment = max_value - current_value
+
+            # Only add a change if there is a non-zero difference
+            if adjustment:
+                new_change = StatisticChangeORM(
+                    user_name=user.name,
+                    statistic=base_stat,
+                    value=adjustment,
+                    date=datetime.utcnow(),
+                    comment="Auto adjustment to max",
+                    server_id=server_id
+                )
+                session.add(new_change)
+
+    session.commit()
+
 def add_end_turn():
     """Adds a new EndTurnORM entry with the current timestamp."""
     session.add(EndTurnORM(date=datetime.utcnow()))
     session.commit()
+
+def get_turn_dates() -> list:
+    """
+    Retrieves all the dates of finished turns.
+    Returns:
+        A list of datetime objects representing each turn finish.
+    """
+    # Query for the dates and order by date.
+    results = session.query(EndTurnORM.date).order_by(EndTurnORM.date).all()
+    # Each result is a tuple; extract the first element.
+    return [record[0] for record in results]
 
 def delete_end_turn_by_day(day: datetime):
     """Deletes all EndTurnORM entries for the specified date."""

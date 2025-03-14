@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 import random
 from db.message_thread import add_message_thread_channel, remove_message_thread_channel
-from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, add_end_turn, delete_end_turn_by_day, get_statistic_data, get_statistics, get_users, save_to_db, update_user_country
+from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, add_end_turn, delete_end_turn_by_day, end_turn_with_max_adjustment, get_statistic_data, get_statistics, get_turn_dates, get_users, save_to_db, update_user_country
 from globe.globe_dedicated_channel import GlobeDedicatedChannelORM, add_globe_dedicated_channel, remove_globe_dedicated_channel, get_all_globe_dedicated_channels
 
 ALL_PERMISSIONS = discord.PermissionOverwrite.from_pair(discord.Permissions.all(), discord.Permissions.none())
@@ -237,7 +237,7 @@ class AdminCog(commands.Cog):
     @discord.slash_command()
     async def finish_turn(self, ctx: discord.commands.context.ApplicationContext):
         """Ends the current turn by adding a new EndTurnORM entry."""
-        add_end_turn()
+        end_turn_with_max_adjustment(ctx.guild_id)
         await ctx.respond("Turn finished. All new statistics will now start from this point.")
 
     # NEW COMMAND: Delete Turn by Day
@@ -252,6 +252,21 @@ class AdminCog(commands.Cog):
             await ctx.respond(f"Deleted all end-turn entries for {date}.")
         except ValueError:
             await ctx.respond("Invalid date format! Use YYYY-MM-DD.")
+
+    @discord.slash_command()
+    async def list_turn_dates(self, ctx: discord.commands.context.ApplicationContext):
+        """
+        Lists all the dates when a turn was finished.
+        """
+        dates = get_turn_dates()
+        if not dates:
+            await ctx.respond("No turn finish dates found.")
+            return
+
+        # Format the dates into readable strings.
+        formatted_dates = "\n".join(date.strftime("%Y-%m-%d %H:%M:%S") for date in dates)
+        await ctx.respond(f"**Turn Finish Dates:**\n{formatted_dates}")
+
 
 
 def setup(bot):
