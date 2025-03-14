@@ -174,27 +174,6 @@ class AdminCog(commands.Cog):
         await ctx.respond(response)
 
     ### Statistic Commands
-    @discord.slash_command()
-    async def add_new_user(self, ctx: discord.commands.context.ApplicationContext, name: str, country: str = None):
-        save_to_db(UserORM(name=name, server_id=ctx.guild_id, country=country))
-        await ctx.respond(f"Added user {name}")
-
-    @discord.slash_command()
-    async def update_user_country(self, ctx: discord.commands.context.ApplicationContext, name: str, country: str = None):
-        update_user_country(name, country)
-        await ctx.respond(f"Changed user {name} country")
-
-    @discord.slash_command()
-    async def update_user_discord_id(self, ctx: discord.commands.context.ApplicationContext, name: str, id: int = None):
-        update_user_discord_id(name, id)
-        await ctx.respond(f"Changed user {name} id")
-
-    @discord.slash_command()
-    async def add_new_statistic(self, ctx: discord.commands.context.ApplicationContext, name: str, type: str, sort_behavior: int = 0, max_name: str = ""):
-        if(max_name == ""):
-            max_name = None
-        save_to_db(StatisticORM(name=name, type=type, max_name=max_name, server_id=ctx.guild_id, sort_behavior=sort_behavior))
-        await ctx.respond(f"Added statistic {name}")
 
     def user_autocomplete(ctx: discord.AutocompleteContext):
         user_input = re.sub(r'[^a-zA-Z]', '', ctx.value, flags=re.IGNORECASE)  # Remove numbers and special characters
@@ -208,6 +187,27 @@ class AdminCog(commands.Cog):
         
         return [name for name in statistics if user_input.lower() in re.sub(r'[^a-zA-Z]', '', name, flags=re.IGNORECASE).lower()]
 
+    @discord.slash_command()
+    async def add_new_user(self, ctx: discord.commands.context.ApplicationContext, name: str, country: str = None):
+        save_to_db(UserORM(name=name, server_id=ctx.guild_id, country=country))
+        await ctx.respond(f"Added user {name}")
+
+    @discord.slash_command()
+    async def update_user_country(self, ctx: discord.commands.context.ApplicationContext, name: discord.Option(str, autocomplete=user_autocomplete), country: str = None):
+        update_user_country(name, country)
+        await ctx.respond(f"Changed user {name} country")
+
+    @discord.slash_command()
+    async def update_user_discord_id(self, ctx: discord.commands.context.ApplicationContext, name: discord.Option(str, autocomplete=user_autocomplete), id: str):
+        update_user_discord_id(name, id)
+        await ctx.respond(f"Changed user {name} id")
+
+    @discord.slash_command()
+    async def add_new_statistic(self, ctx: discord.commands.context.ApplicationContext, name: str, type: str, sort_behavior: int = 0, max_name: str = ""):
+        if(max_name == ""):
+            max_name = None
+        save_to_db(StatisticORM(name=name, type=type, max_name=max_name, server_id=ctx.guild_id, sort_behavior=sort_behavior))
+        await ctx.respond(f"Added statistic {name}")
 
     @discord.slash_command()
     async def statistic_change(self, 
@@ -239,7 +239,7 @@ class AdminCog(commands.Cog):
         await ctx.respond(f"# {statistic}\n{result}")
     
     @discord.slash_command()
-    async def mystatistics(self, ctx: discord.commands.context.ApplicationContext, 
+    async def user_statistics(self, ctx: discord.commands.context.ApplicationContext, 
                            user_name: discord.Option(str, autocomplete=user_autocomplete) = None):
         """
         Retrieves your aggregated statistics.
@@ -267,8 +267,7 @@ class AdminCog(commands.Cog):
         else:
             result = "No statistic data found."
 
-        await ctx.respond(f"**Your Statistics:**\n{result}")
-
+        await ctx.respond(f"**{user_name} Statistics:**\n{result}")
 
         # NEW COMMAND: Finish Turn
     @discord.slash_command()

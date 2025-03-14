@@ -100,7 +100,7 @@ def get_statistic_raw_data(server_id: int, statistic: str, only_before_last_turn
 def get_user_name_by_discord_id(discord_id: int) -> str:
     try:
         user = session.query(UserORM).filter_by(discord_id=discord_id).one()
-        return user.user_name
+        return user.name
     except Exception as e:
         return None  # or handle as appropriate
 
