@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 import random
 from db.message_thread import add_message_thread_channel, remove_message_thread_channel
-from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, add_end_turn, delete_end_turn_by_day, end_turn_with_max_adjustment, get_statistic_data, get_statistics, get_turn_dates, get_user_statistic_data, get_users, save_to_db, update_user_country
+from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, add_end_turn, delete_end_turn_by_day, end_turn_with_max_adjustment, get_statistic_data, get_statistics, get_turn_dates, get_user_name_by_discord_id, get_user_statistic_data, get_users, save_to_db, update_user_country, update_user_discord_id
 from globe.globe_dedicated_channel import GlobeDedicatedChannelORM, add_globe_dedicated_channel, remove_globe_dedicated_channel, get_all_globe_dedicated_channels
 
 ALL_PERMISSIONS = discord.PermissionOverwrite.from_pair(discord.Permissions.all(), discord.Permissions.none())
@@ -182,7 +182,12 @@ class AdminCog(commands.Cog):
     @discord.slash_command()
     async def update_user_country(self, ctx: discord.commands.context.ApplicationContext, name: str, country: str = None):
         update_user_country(name, country)
-        await ctx.respond(f"Changed user {name}")
+        await ctx.respond(f"Changed user {name} country")
+
+    @discord.slash_command()
+    async def update_user_discord_id(self, ctx: discord.commands.context.ApplicationContext, name: str, id: int = None):
+        update_user_discord_id(name, id)
+        await ctx.respond(f"Changed user {name} id")
 
     @discord.slash_command()
     async def add_new_statistic(self, ctx: discord.commands.context.ApplicationContext, name: str, type: str, sort_behavior: int = 0, max_name: str = ""):
@@ -235,13 +240,19 @@ class AdminCog(commands.Cog):
     
     @discord.slash_command()
     async def mystatistics(self, ctx: discord.commands.context.ApplicationContext, 
-                           user_name: discord.Option(str, autocomplete=user_autocomplete)):
+                           user_name: discord.Option(str, autocomplete=user_autocomplete) = None):
         """
         Retrieves your aggregated statistics.
         For each statistic, displays its current total value and, if applicable, the max value (as 'na turę').
         """
 
         server_id = ctx.guild_id
+        if(user_name == None):
+            user_name = get_user_name_by_discord_id(ctx.author.id)
+
+        if(user_name == None):
+            await ctx.respond(f"**You do not exist**")
+            return
 
         # Retrieve the aggregated statistic data for this user
         data = get_user_statistic_data(server_id, user_name)

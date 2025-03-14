@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum, IntEnum
+from requests import Session
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, func, select
 
 from globe.globe_message import GlobeMessage
@@ -9,6 +10,7 @@ class UserORM(Base):
     __tablename__ = 'user'
 
     name = Column(String, primary_key=True)
+    discord_id = Column(Integer)
     server_id = Column(Integer)
     country = Column(String)
     
@@ -93,6 +95,14 @@ def get_statistic_raw_data(server_id: int, statistic: str, only_before_last_turn
             query = query.order_by(value_sum.desc())
 
     return query.all() if last_turn_date or not only_before_last_turn else []
+
+# Assuming 'User' is your ORM model and 'discord_id' is a column in that model
+def get_user_name_by_discord_id(discord_id: int) -> str:
+    try:
+        user = session.query(UserORM).filter_by(discord_id=discord_id).one()
+        return user.user_name
+    except Exception as e:
+        return None  # or handle as appropriate
 
 def get_user_statistic_data(server_id: int, user_name: str, only_before_last_turn: bool = False):
     """
@@ -264,6 +274,14 @@ def update_user_country(name: str, new_country: str) -> None:
     user = session.query(UserORM).filter_by(name=name).first()
     if user:
         user.country = new_country
+        session.commit()
+    else:
+        raise ValueError("User not found")
+
+def update_user_discord_id(name: str, discord_id: int) -> None:
+    user = session.query(UserORM).filter_by(name=name).first()
+    if user:
+        user.discord_id = discord_id
         session.commit()
     else:
         raise ValueError("User not found")
