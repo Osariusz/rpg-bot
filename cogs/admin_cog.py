@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 from typing import Optional
 import discord
 from discord.ext import commands
@@ -189,13 +190,19 @@ class AdminCog(commands.Cog):
             max_name = None
         save_to_db(StatisticORM(name=name, type=type, max_name=max_name, server_id=ctx.guild_id, sort_behavior=sort_behavior))
         await ctx.respond(f"Added statistic {name}")
+
+    def user_autocomplete(ctx: discord.AutocompleteContext):
+        user_input = re.sub(r'[^a-zA-Z]', '', ctx.value, flags=re.IGNORECASE)  # Remove numbers and special characters
+        users = [user.name for user in get_users(ctx.interaction.guild_id)]
         
-    def user_autocomplete(ctx : discord.AutocompleteContext):
-        print(ctx.interaction.guild_id)
-        return [user.name for user in get_users(ctx.interaction.guild_id)]
-    
-    def statistic_autocomplete(ctx : discord.AutocompleteContext):
-        return [user.name for user in get_statistics(ctx.interaction.guild_id)]
+        return [name for name in users if user_input.lower() in re.sub(r'[^a-zA-Z]', '', name, flags=re.IGNORECASE).lower()]
+
+    def statistic_autocomplete(ctx: discord.AutocompleteContext):
+        user_input = re.sub(r'[^a-zA-Z]', '', ctx.value, flags=re.IGNORECASE)  # Remove numbers and special characters
+        statistics = [user.name for user in get_statistics(ctx.interaction.guild_id)]
+        
+        return [name for name in statistics if user_input.lower() in re.sub(r'[^a-zA-Z]', '', name, flags=re.IGNORECASE).lower()]
+
 
     @discord.slash_command()
     async def statistic_change(self, 
