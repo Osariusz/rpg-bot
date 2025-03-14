@@ -94,6 +94,72 @@ def get_statistic_raw_data(server_id: int, statistic: str, only_before_last_turn
 
     return query.all() if last_turn_date or not only_before_last_turn else []
 
+def get_user_statistic_data(server_id: int, user_name: str, only_before_last_turn: bool = False):
+    """
+    Aggregates statistic points for a single user.
+    For statistics that have a max_name defined, it adds the max statistic value as an extra element.
+    Returns:
+        A list of tuples: (statistic, aggregated_value, user_country[, max_value])
+    """
+    value_sum = func.sum(StatisticChangeORM.value).label("total_value")
+
+    # Get the last EndTurnORM date
+    last_turn_date = session.query(func.max(EndTurnORM.date)).scalar()
+
+    # Query aggregated data for this user (grouped by statistic)
+    query = session.query(
+        StatisticChangeORM.statistic,
+        value_sum
+    ).filter(
+        (StatisticChangeORM.server_id == server_id) &
+        (StatisticChangeORM.user_name == user_name)
+    )
+    if last_turn_date and only_before_last_turn:
+        query = query.filter(StatisticChangeORM.date < last_turn_date)
+    base_data = query.group_by(StatisticChangeORM.statistic).all()
+
+    # Get user's country from the user table
+    user_record = session.query(UserORM).filter_by(name=user_name, server_id=server_id).first()
+    country = user_record.country if user_record else "None"
+
+    # Retrieve all StatisticORM configurations with a max_name for this server
+    configs = session.query(StatisticORM).filter(
+        StatisticORM.server_id == server_id,
+        StatisticORM.max_name.isnot(None)
+    ).all()
+    # Build mapping from base statistic to its corresponding max statistic name
+    base_to_max = {config.name: config.max_name for config in configs}
+
+    # If any statistics have a max, query for their aggregated values for this user
+    if base_to_max:
+        max_stat_names = list(base_to_max.values())
+        max_query = session.query(
+            StatisticChangeORM.statistic,
+            func.sum(StatisticChangeORM.value).label("total_value")
+        ).filter(
+            StatisticChangeORM.server_id == server_id,
+            StatisticChangeORM.user_name == user_name,
+            StatisticChangeORM.statistic.in_(max_stat_names)
+        )
+        if last_turn_date and only_before_last_turn:
+            max_query = max_query.filter(StatisticChangeORM.date < last_turn_date)
+        max_data = max_query.group_by(StatisticChangeORM.statistic).all()
+        # Map the max statistic name to its aggregated value
+        max_data_dict = {stat: total for stat, total in max_data}
+    else:
+        max_data_dict = {}
+
+    # Combine results: for each base statistic, add the corresponding max value if configured.
+    results = []
+    for stat, total in base_data:
+        if stat in base_to_max:
+            max_stat_name = base_to_max[stat]
+            max_value = max_data_dict.get(max_stat_name, 0)
+            results.append((stat, total, country, max_value))
+        else:
+            results.append((stat, total, country))
+    return results
+
 def end_turn_with_max_adjustment(server_id: int):
     # First, add an end turn entry
     add_end_turn()
