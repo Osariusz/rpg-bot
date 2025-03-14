@@ -26,7 +26,7 @@ class UserPrivateCog(commands.Cog):
         user_name = get_user_name_by_discord_id(ctx.author.id)
 
         if(user_name == None):
-            await ctx.respond(f"**You do not exist**")
+            await ctx.respond(f"**You do not exist**", ephemeral=True)
             return
 
         # Retrieve the aggregated statistic data for this user
@@ -42,7 +42,7 @@ class UserPrivateCog(commands.Cog):
         else:
             result = "No statistic data found."
 
-        await ctx.respond(f"**{user_name} Statistics:**\n{result}")
+        await ctx.respond(f"**{user_name} Statistics:**\n{result}", ephemeral=True)
 
 def setup(bot):
     bot.add_cog(UserPrivateCog(bot))
