@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import os
 from typing import Any
 from discord.ext import commands
