@@ -54,7 +54,7 @@ class Bot(commands.Bot):
         name: str = "thread"
         if(len(message_content_lines) > 0 and len(message_content_lines[0]) > 0):
             name = message_content_lines[0]
-        date_string = datetime.now().strftime("%A.%B.%Y")
+        date_string = datetime.now().strftime("%d.%m.%Y")
         name = date_string + name
         new_thread: discord.Thread = await message.create_thread(name=name)
         if(thread_channel.ping_id != None):
