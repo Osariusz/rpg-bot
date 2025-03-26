@@ -58,7 +58,8 @@ class Bot(commands.Bot):
         name =  f"{date_string} {name}"
         new_thread: discord.Thread = await message.create_thread(name=name)
         if(thread_channel.ping_id != None):
-            await new_thread.send(f"<@{thread_channel.ping_id}>", mention_author=False)
+            #TODO: Add option to ping users
+            await new_thread.send(f"<@&{thread_channel.ping_id}>", mention_author=False)
 
     def is_self_or_parent_thread_channel(self, channel: discord.TextChannel):
         channel.id in self.map_channels or (isinstance(channel, discord.Thread) and channel.parent_id in self.map_channels)
