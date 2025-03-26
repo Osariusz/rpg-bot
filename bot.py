@@ -48,7 +48,7 @@ class Bot(commands.Bot):
         await globe_message.send_globe_message()
         save_message_to_db(globe_message)
 
-    async def on_thread_channel_message(self, message: discord.Message, thread_channel: discord.Channel):
+    async def on_thread_channel_message(self, message: discord.Message, thread_channel: discord.TextChannel):
         cleaner_content: str = discord.utils.remove_markdown(message.clean_content)
         message_content_lines: list[str] = cleaner_content.split("\n")
         name: str = "thread"
@@ -60,7 +60,7 @@ class Bot(commands.Bot):
         if(thread_channel.ping_id != None):
             await new_thread.send(f"<@{thread_channel.ping_id}>", mention_author=False)
 
-    def is_self_or_parent_thread_channel(self, channel: discord.Channel):
+    def is_self_or_parent_thread_channel(self, channel: discord.TextChannel):
         channel.id in self.map_channels or (isinstance(channel, discord.Thread) and channel.parent_id in self.map_channels)
 
     async def on_message(self, message: discord.Message):
