@@ -60,10 +60,16 @@ class Bot(commands.Bot):
         if(thread_channel.ping_id != None):
             await new_thread.send(f"<@{thread_channel.ping_id}>", mention_author=False)
 
+    def is_self_or_parent_thread_channel(self, channel: discord.Channel):
+        channel.id in self.map_channels or (isinstance(channel, discord.Thread) and channel.parent_id in self.map_channels)
+
     async def on_message(self, message: discord.Message):
         thread_channel = get_message_thread_channel(message.channel.id)
 
-        if(not message.author.bot and message.channel.id in self.map_channels and len(message.attachments) > 0):
+        if(not message.author.bot and 
+            self.is_self_or_parent_thread_channel(message.channel) and
+            len(message.attachments) > 0
+            ):
             await self.on_globe_channel_message(message)
         if(not message.author.bot and thread_channel != None):
             await self.on_thread_channel_message(message, thread_channel)
