@@ -66,10 +66,10 @@ class Bot(commands.Bot):
     async def on_message(self, message: discord.Message):
         thread_channel = get_message_thread_channel(message.channel.id)
 
-        if(not message.author.bot and 
-            self.is_self_or_parent_thread_channel(message.channel) and
-            len(message.attachments) > 0
-            ):
+        if  not message.author.bot and \
+            self.is_self_or_parent_thread_channel(message.channel) and \
+            len(message.attachments) > 0:
             await self.on_globe_channel_message(message)
-        if(not message.author.bot and thread_channel != None):
+
+        if not message.author.bot and thread_channel != None:
             await self.on_thread_channel_message(message, thread_channel)
