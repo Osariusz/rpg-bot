@@ -30,7 +30,7 @@ def remove_message_thread_channel(channel_id: int):
     else:
         raise IndexError(f"Channel with ID {channel_id} doesn't exist")
 
-def get_message_thread_channel(channel_id: int):
+def get_message_thread_channel(channel_id: int) -> MessageThreadhannelORM:
     channel = session.query(MessageThreadhannelORM).filter_by(id=channel_id).first()
     return channel
 
