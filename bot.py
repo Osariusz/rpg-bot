@@ -1,8 +1,9 @@
+import datetime
 import os
 from typing import Any
 from discord.ext import commands
 import discord
-from db.message_thread import get_all_message_thread_channels
+from db.message_thread import get_all_message_thread_channels, get_message_thread_channel
 from globe.globe_message import GlobeMessage, save_message_to_db, get_all_globe_messages, GlobeMessageORM
 from globe.globe_dedicated_channel import get_all_globe_dedicated_channels
 from db.db import Base, engine
@@ -42,18 +43,27 @@ class Bot(commands.Bot):
                 print(e)
         print(f"Bot is online! Logged in as {self.user}")
 
+    async def on_globe_channel_message(self, message: discord.Message):
+        globe_message = GlobeMessage(message)
+        await globe_message.send_globe_message()
+        save_message_to_db(globe_message)
+
+    async def on_thread_channel_message(self, message: discord.Message, thread_channel: discord.Channel):
+        cleaner_content: str = discord.utils.remove_markdown(message.clean_content)
+        message_content_lines: list[str] = cleaner_content.split("\n")
+        name: str = "thread"
+        if(len(message_content_lines) > 0 and len(message_content_lines[0]) > 0):
+            name = message_content_lines[0]
+        date_string = datetime.now().strftime("%A.%B.%Y")
+        name = date_string + name
+        new_thread: discord.Thread = await message.create_thread(name=name)
+        if(thread_channel.ping_id != None):
+            await new_thread.send(f"<@{thread_channel.ping_id}>", mention_author=False)
 
     async def on_message(self, message: discord.Message):
-        if(not message.author.bot and message.channel.id in self.map_channels and len(message.attachments) > 0):
-            globe_message = GlobeMessage(message)
-            await globe_message.send_globe_message()
-            save_message_to_db(globe_message)
-        if(not message.author.bot and message.channel.id in self.message_thread_channels):
-            cleaner_content: str = discord.utils.remove_markdown(message.clean_content)
-            message_content_lines: list[str] = cleaner_content.split("\n")
-            name: str = "thread"
-            if(len(message_content_lines) > 0 and len(message_content_lines[0]) > 0):
-                name = message_content_lines[0]
-            await message.create_thread(name=name)
+        thread_channel = get_message_thread_channel(message.channel.id)
 
-        
+        if(not message.author.bot and message.channel.id in self.map_channels and len(message.attachments) > 0):
+            await self.on_globe_channel_message(message)
+        if(not message.author.bot and thread_channel != None):
+            await self.on_thread_channel_message(message, thread_channel)

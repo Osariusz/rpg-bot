@@ -9,6 +9,7 @@ class MessageThreadhannelORM(Base):
     __tablename__ = 'message_thread_channels'
 
     id = Column(Integer, primary_key=True)
+    ping_id = Column(Integer)
 
 def add_message_thread_channel(channel_id: int):
     existing_channel = session.query(MessageThreadhannelORM).filter_by(id=channel_id).first()
@@ -20,7 +21,6 @@ def add_message_thread_channel(channel_id: int):
     else:
         raise IndexError(f"Channel with ID {channel_id} already exists")
 
-
 def remove_message_thread_channel(channel_id: int):
     channel = session.query(MessageThreadhannelORM).filter_by(id=channel_id).first()
 
@@ -30,6 +30,10 @@ def remove_message_thread_channel(channel_id: int):
     else:
         raise IndexError(f"Channel with ID {channel_id} doesn't exist")
 
-def get_all_message_thread_channels():
+def get_message_thread_channel(channel_id: int):
+    channel = session.query(MessageThreadhannelORM).filter_by(id=channel_id).first()
+    return channel
+
+def get_all_message_thread_channels() -> list[MessageThreadhannelORM]:
     channels = session.query(MessageThreadhannelORM).all()
     return channels
