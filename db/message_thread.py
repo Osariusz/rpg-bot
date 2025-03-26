@@ -11,11 +11,11 @@ class MessageThreadhannelORM(Base):
     id = Column(Integer, primary_key=True)
     ping_id = Column(Integer)
 
-def add_message_thread_channel(channel_id: int):
+def add_message_thread_channel(channel_id: int, ping_id:int = None):
     existing_channel = session.query(MessageThreadhannelORM).filter_by(id=channel_id).first()
     
     if not existing_channel:
-        orm_instance = MessageThreadhannelORM(id=channel_id)
+        orm_instance = MessageThreadhannelORM(id=channel_id, ping_id=ping_id)
         session.add(orm_instance)
         session.commit()
     else:

@@ -81,7 +81,7 @@ class AdminCog(commands.Cog):
     ### Message thread commands
 
     @discord.slash_command()
-    async def add_message_thread_channel(self, ctx: discord.commands.context.ApplicationContext, channel_id:str = None):
+    async def add_message_thread_channel(self, ctx: discord.commands.context.ApplicationContext, channel_id:str = None, ping_id:str = None):
         if(channel_id == None):
             channel_id = ctx.channel_id
         channel: discord.TextChannel = await self.bot.fetch_channel(channel_id)
@@ -90,7 +90,7 @@ class AdminCog(commands.Cog):
             return
         channel_id = int(channel_id)
         try:
-            add_message_thread_channel(channel_id)
+            add_message_thread_channel(channel_id, ping_id)
         except IndexError:
             await ctx.respond(f"Channel {channel_id} is already thread channel")
             return
