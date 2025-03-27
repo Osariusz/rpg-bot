@@ -62,7 +62,8 @@ class Bot(commands.Bot):
             await new_thread.send(f"<@&{thread_channel.ping_id}>", mention_author=False)
 
     def is_self_or_parent_thread_channel(self, channel: discord.TextChannel):
-        channel.id in self.map_channels or (isinstance(channel, discord.Thread) and channel.parent_id in self.map_channels)
+        return channel.id in self.map_channels or \
+        (isinstance(channel, discord.Thread) and channel.parent_id in self.map_channels)
 
     async def on_message(self, message: discord.Message):
         thread_channel = get_message_thread_channel(message.channel.id)
