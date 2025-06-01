@@ -5,6 +5,7 @@ from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, func
 
 from globe.globe_message import GlobeMessage
 from db.db import Base, engine, session
+from utils import parse_date
 
 class UserORM(Base):
     __tablename__ = 'user'
@@ -244,6 +245,27 @@ def delete_end_turn_by_day(day: datetime):
     """Deletes all EndTurnORM entries for the specified date."""
     session.query(EndTurnORM).filter(func.date(EndTurnORM.date) == day.date()).delete()
     session.commit()
+
+def get_statistic_changes_between_dates(start_date: datetime, end_date: datetime) -> list[str]:
+    results = (
+        session.query(StatisticChangeORM)
+        .filter(StatisticChangeORM.date.between(start_date, end_date))
+        .order_by(StatisticChangeORM.date)
+        .all()
+    )
+
+    formatted_results = []
+    for record in results:
+        formatted_str = (
+            f"[{record.date.strftime('%Y-%m-%d %H:%M:%S')}] "
+            f"{record.user_name} changed '{record.statistic}' by {record.value} "
+            f"(Server ID: {record.server_id})"
+        )
+        if record.comment:
+            formatted_str += f" — {record.comment}"
+        formatted_results.append(formatted_str)
+
+    return formatted_results
 
 def get_statistic_data(server_id: int, statistic: str):
     result = get_statistic_raw_data(server_id, statistic)
