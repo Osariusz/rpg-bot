@@ -7,7 +7,7 @@ import random
 from db.message_thread import add_message_thread_channel, remove_message_thread_channel
 from db.statistics import StatisticChangeORM, StatisticORM, StatisticsShowInfoSortTypeBehaviour, UserORM, add_end_turn, delete_end_turn_by_day, end_turn_with_max_adjustment, get_statistic_changes_between_dates, get_statistic_data, get_statistics, get_turn_dates, get_user_name_by_discord_id, get_user_statistic_data, get_users, save_to_db, update_user_country, update_user_discord_id
 from globe.globe_dedicated_channel import GlobeDedicatedChannelORM, add_globe_dedicated_channel, remove_globe_dedicated_channel, get_all_globe_dedicated_channels
-from utils import parse_date
+from utils import parse_date, split_long_message
 
 ALL_PERMISSIONS = discord.PermissionOverwrite.from_pair(discord.Permissions.all(), discord.Permissions.none())
 
@@ -310,7 +310,8 @@ class AdminCog(commands.Cog):
         start_date: datetime = parse_date(start_date)
         end_date: datetime = parse_date(end_date)
 
-        await ctx.respond(get_statistic_changes_between_dates(start_date, end_date))
+        for message in split_long_message(get_statistic_changes_between_dates(start_date, end_date)):
+            await ctx.respond(message)
 
 
 def setup(bot):

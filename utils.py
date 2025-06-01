@@ -1,5 +1,6 @@
 from datetime import datetime
 
+MAX_MESSAGE_LENGTH = 2000
 
 def parse_date(date_str: str) -> datetime:
     """
@@ -21,3 +22,6 @@ def parse_date(date_str: str) -> datetime:
         except ValueError:
             continue
     raise ValueError(f"Date format for '{date_str}' is not recognized.")
+
+def split_long_message(message: str) -> list[str]:
+    return [message[i:i + MAX_MESSAGE_LENGTH] for i in range(0, len(message), MAX_MESSAGE_LENGTH)]
