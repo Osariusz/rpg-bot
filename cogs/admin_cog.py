@@ -51,6 +51,7 @@ class AdminCog(commands.Cog):
                 guild.default_role: discord.PermissionOverwrite(),
                 role: ALL_PERMISSIONS,
             }
+            #TODO: Add random emoji before name
             category = await guild.create_category(name=f"{role_name} Zone", overwrites=category_overwrites)
 
             public_channel_overwrites = {
