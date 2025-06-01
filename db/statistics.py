@@ -258,11 +258,10 @@ def get_statistic_changes_between_dates(start_date: datetime, end_date: datetime
     for record in results:
         formatted_str = (
             f"[{record.date.strftime('%Y-%m-%d %H:%M:%S')}] "
-            f"{record.user_name.capitalize()} '{record.statistic}': {record.value} "
+            f"{record.user_name.capitalize()} '{record.statistic}': **{record.value}** "
         )
         if record.comment:
             formatted_str += f" — {record.comment}"
-        formatted_str += "\n"
         formatted_results.append(formatted_str)
 
     return formatted_results

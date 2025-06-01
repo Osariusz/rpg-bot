@@ -310,7 +310,8 @@ class AdminCog(commands.Cog):
         start_date: datetime = parse_date(start_date)
         end_date: datetime = parse_date(end_date)
 
-        for message in split_long_message(get_statistic_changes_between_dates(start_date, end_date)):
+        result = "\n".join(get_statistic_changes_between_dates(start_date, end_date))
+        for message in split_long_message(result):
             await ctx.respond(message)
 
 
